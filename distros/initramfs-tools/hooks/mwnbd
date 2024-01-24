@@ -1,0 +1,29 @@
+#!/bin/sh -e
+# initramfs hook for nbd
+
+PREREQ=""
+
+# Output pre-requisites
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case "$1" in
+    prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+
+. /usr/share/initramfs-tools/hook-functions
+
+copy_exec `which printenv` /sbin
+
+# Copy across the qemu-nbd binaries
+if [ -e `which qemu-nbd` ]; then
+    copy_exec `which qemu-nbd` /sbin
+else
+    echo "couldn't find qemu-nbd"
+fi

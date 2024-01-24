@@ -1,0 +1,92 @@
+#!/bin/sh -e
+# initramfs local-top script for nbd
+
+PREREQ="udev"
+
+# Output pre-requisites
+prereqs() {
+	echo "$PREREQ"
+}
+
+case "$1" in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+#
+# AINUC Multiware is using efivars to identify itself, the envirement under multiware
+# MUST have the efivars named "MwVDInfo"
+# "MwVDInfo" is both the key and the values
+# multiware uses text output to shell for convienence
+# the first line named version, but it has four CAN'T see chars
+# the second line is the other parameters seperated by one space
+#
+
+### STEP.1 Read MwVDInfo
+
+mount -t efivarfs none /sys/firmware/efi/efivars
+
+MwVDInfo="/sys/firmware/efi/efivars/MwVDInfo-d5b8d8f4-3ff0-4b43-81d5-4af802412a84"
+
+
+[ -e ${MwVDInfo} ] || sleep 3
+
+if [ -e ${MwVDInfo} ]; then
+	for x in $(cat $MwVDInfo); do
+		case $x in
+		ver=*)
+			ver=${x#ver=}
+			;;
+		partguid=*)
+			partguid=$(echo ${x#partguid=} | tr 'A-Z' 'a-z')
+			;;
+		vdisk=*)
+			vdisk=$(echo ${x#vdisk=} | sed -e 's#\\#/#g' | sed -e 's/[[:space:]]*//g')
+			;;
+		vdtype=*)
+			vdtype=${x#vdtype=}
+			;;
+		fstype=*)
+			fstype=${x#fstype=}
+			;;
+		esac
+	done
+
+	HOSTDEV=$(blkid -t PARTUUID=${partguid} -o device)
+#	HOSTFSTYPE=${fstype}
+	VDISKFILE=${vdisk}
+	VDTYPE=${vdtype}
+
+### STEP.2 Check HOSTDEV and Mount to /host
+
+	if [ -n "$VDISKFILE" ]; then
+		NEWROOT="${rootmnt}"
+		mkdir -p /host
+		if [ -z "$HOSTFSTYPE" ]; then
+			HOSTFSTYPE="$(blkid -s TYPE -o value "${HOSTDEV}")"
+		fi
+		mount -t ${HOSTFSTYPE} -o rw ${HOSTDEV} /host
+
+### STEP.3 QEMU-NBD connect vdisk file
+
+		if [ "${VDISKFILE#/}" != "${VDISKFILE}" ]; then
+			modprobe nbd max_part=8
+			[ -e /dev/nbd0 ] || sleep 3
+			if [ ${VDTYPE} == "vhd" ]; then
+			      VDTYPE="vpc"
+			fi
+			qemu-nbd -c /dev/nbd0 /host${VDISKFILE} -f ${VDTYPE}
+			[ -e "/dev/nbd0p1" ] || sleep 3
+		fi
+
+### STEP.4 Mount ROOTDEV
+
+		#
+		# Done by mount_root in local
+		#
+
+	fi
+fi
+

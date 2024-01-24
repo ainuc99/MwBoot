@@ -1,0 +1,31 @@
+#!/bin/sh -e
+# initramfs local-bottom script for nbd
+
+PREREQ="udev"
+
+# Output pre-requisites
+prereqs() {
+	echo "$PREREQ"
+}
+
+case "$1" in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+#
+# STEP.1 ~ STEP.3 exists in local-top
+#
+
+### STEP.5 Mount move to /root/host
+
+MwVDInfo="/sys/firmware/efi/efivars/MwVDInfo-d5b8d8f4-3ff0-4b43-81d5-4af802412a84"
+
+if [ -e ${MwVDInfo} ]; then
+  [ -d ${rootmnt}/host ] || mkdir -p ${rootmnt}/host
+  mount --move /host ${rootmnt}/host
+fi
+
+umount /sys/firmware/efi/efivars
