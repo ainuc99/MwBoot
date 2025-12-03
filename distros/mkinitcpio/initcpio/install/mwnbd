@@ -1,0 +1,19 @@
+#!/bin/bash
+
+build() {
+    add_binary qemu-nbd
+    add_binary tr
+    add_binary /usr/bin/ntfs-3g
+    add_symlink /usr/bin/mount.ntfs ntfs-3g
+    add_dir "/var/lock"
+    add_module "ntfs3"
+    add_module "nbd"
+    add_module "exfat"
+    add_runscript
+}
+
+help() {
+  cat <<HELPEOF
+This hook enables mwnbd hook for Multiware.
+HELPEOF
+}
