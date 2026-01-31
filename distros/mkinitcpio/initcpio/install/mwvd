@@ -1,0 +1,20 @@
+#!/bin/bash
+
+build() {
+    add_binary /usr/bin/ntfs-3g
+    add_binary /usr/bin/tr
+    add_binary /sbin/mwsetup
+#    add_symlink /usr/bin/mount.ntfs ntfs-3g
+    add_dir "/var/lock"
+    add_module "ntfs3"
+    add_module "fuse"
+    add_module "mwvd"
+    add_module "exfat"
+    add_runscript
+}
+
+help() {
+  cat <<HELPEOF
+This hook enables mwvd hook for Multiware.
+HELPEOF
+}
