@@ -22,8 +22,8 @@ esac
 copy_exec `which printenv` /sbin
 
 # Copy across the qemu-nbd binaries
-if [ -e `which qemu-nbd` ]; then
-    copy_exec `which qemu-nbd` /sbin
+if [ -e `which mwsetup` ]; then
+    copy_exec `which mwsetup` /sbin
 else
-    echo "couldn't find qemu-nbd"
+    echo "couldn't find mwsetup"
 fi

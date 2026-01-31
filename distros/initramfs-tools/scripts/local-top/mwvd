@@ -59,26 +59,26 @@ if [ -e ${MwVDInfo} ]; then
 	VDISKFILE=${vdisk}
 	VDTYPE=${vdtype}
 
-### STEP.2 Check HOSTDEV and Mount to /host
+### STEP.2 Check HOSTDEV and Mount to /run/initramfs/vds
 
 	if [ -n "$VDISKFILE" ]; then
 		NEWROOT="${rootmnt}"
-		mkdir -p /host
+		mkdir -p /run/initramfs/vds
 		if [ -z "$HOSTFSTYPE" ]; then
 			HOSTFSTYPE="$(blkid -s TYPE -o value "${HOSTDEV}")"
 		fi
-		mount -t ${HOSTFSTYPE} -o rw ${HOSTDEV} /host
+		if [ ${HOSTFSTYPE} == "ntfs" ]; then
+			HOSTFSTYPE="ntfs3"
+		fi
+		mount -t ${HOSTFSTYPE} -o force -o rw ${HOSTDEV} /run/initramfs/vds
 
-### STEP.3 QEMU-NBD connect vdisk file
+### STEP.3 mwvd connect vdisk file
 
 		if [ "${VDISKFILE#/}" != "${VDISKFILE}" ]; then
-			modprobe nbd max_part=8
-			[ -e /dev/nbd0 ] || sleep 3
-			if [ ${VDTYPE} == "vhd" ]; then
-			      VDTYPE="vpc"
-			fi
-			qemu-nbd -c /dev/nbd0 /host${VDISKFILE} -f ${VDTYPE}
-			[ -e "/dev/nbd0p1" ] || sleep 3
+			modprobe mwvd
+			[ -e /dev/mwvd0 ] || sleep 3
+			mwsetup -c /dev/mwvd0 /run/initramfs/vds${VDISKFILE} 
+			[ -e "/dev/mwvd0p1" ] || sleep 3
 		fi
 
 ### STEP.4 Mount ROOTDEV

@@ -23,9 +23,9 @@ esac
 
 MwVDInfo="/sys/firmware/efi/efivars/MwVDInfo-d5b8d8f4-3ff0-4b43-81d5-4af802412a84"
 
-if [ -e ${MwVDInfo} ]; then
-  [ -d ${rootmnt}/host ] || mkdir -p ${rootmnt}/host
-  mount --move /host ${rootmnt}/host
-fi
+#if [ -e ${MwVDInfo} ]; then
+#  [ -d ${rootmnt}/host ] || mkdir -p ${rootmnt}/host
+#  mount --move /host ${rootmnt}/host
+#fi
 
-umount /sys/firmware/efi/efivars
+#umount /sys/firmware/efi/efivars

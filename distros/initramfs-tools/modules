@@ -9,8 +9,7 @@
 #
 # raid1
 # sd_mod
-# loop
-# fuse
-# dm-mod
-# overlay
-nbd
+mwvd
+ntfs3
+exfat
+efivarfs
